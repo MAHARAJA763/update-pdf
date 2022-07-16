@@ -27,6 +27,7 @@ export class AppComponent implements OnInit{
 
   upload = () => {
     this.filePath = "";
+    this.error = "";
     let formData = new FormData();
     formData.append('file', this.file, this.file.name);
     this.apiService.UpdatePdf(formData).subscribe((res: any) => {

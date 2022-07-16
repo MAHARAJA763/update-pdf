@@ -16,6 +16,9 @@ module.exports = {
           let filePath = uploadedFiles[0].fd;
           let outputPath = path.normalize(__dirname + '../../../assets/pdf/modified/' + uploadedFiles[0].filename)
           let isDateFound = false;
+          if(!fs.existsSync(path.normalize(__dirname + '../../../assets/pdf/modified/'))){
+            fs.mkdirSync(path.normalize(__dirname + '../../../assets/pdf/modified/'));
+          }
 
           const searchAndReplace = async () => {
             const pdfdoc = await PDFNet.PDFDoc.createFromFilePath(filePath);
@@ -33,19 +36,28 @@ module.exports = {
                 let newDate = moment(result.out_str, 'MMMM Do, YYYY').add(2, 'days').format('MMMM Do, YYYY');
                 const replacer = await PDFNet.ContentReplacer.create();
                 const page = await pdfdoc.getPage((result.page_num));
-                let arr = result.out_str.split(" ");
-                let arr2 = newDate.split(" ");
-                for (let i = 0; i < arr.length; i++) {
-                    let string1 = arr[i];
-                    let string2 = arr2[i];
+                if(result.out_str.split("").filter((v) => v === result.out_str.substring(result.out_str.length - 1)).length > 1){
+                  let arr = result.out_str.split(" ");
+                  let arr2 = newDate.split(" ");
+                  for (let i = 0; i < arr.length; i++) {
+                      let string1 = arr[i].trim();
+                      let string2 = arr2[i].trim();
 
 
-                    let matchStringStart = string1.substring(0, 1);
-                    let matchStringEnd = string1.substring(string1.length - 1);
-                    let replaceString = string1.substring(1, string1.length - 1);
-                    await replacer.setMatchStrings(matchStringStart, matchStringEnd);
-                    await replacer.addString(replaceString, string2);
-                    await replacer.process(page);
+                      let matchStringStart = string1.substring(0, 1);
+                      let matchStringEnd = string1.substring(string1.length - 1);
+                      let replaceString = string1.substring(1, string1.length - 1);
+                      await replacer.setMatchStrings(matchStringStart, matchStringEnd);
+                      await replacer.addString(replaceString, string2);
+                      await replacer.process(page);
+                  }
+                } else {
+                  let matchStringStart = result.out_str.substring(0, 1);
+                  let matchStringEnd = result.out_str.substring(result.out_str.length - 1);
+                  let replaceString = result.out_str.substring(1, result.out_str.length - 1);
+                  await replacer.setMatchStrings(matchStringStart, matchStringEnd);
+                  await replacer.addString(replaceString, newDate);
+                  await replacer.process(page);
                 }
                 await pdfdoc.save(outputPath, PDFNet.SDFDoc.SaveOptions.e_linearized);
               } else if(result.code === PDFNet.TextSearch.ResultCode.e_page){
