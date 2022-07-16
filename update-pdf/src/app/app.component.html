@@ -1,0 +1,17 @@
+<div class="main-container">
+  <div class="upload-container"onclick="fileInput.click()">
+    <input type="file" id="fileInput" name="file" hidden (change)="onFileInput($event)" accept=".pdf">
+    <input type="text" for="fileInput" placeholder="No File Chosen" readonly [(ngModel)]="file.name">
+    <button mat-flat-button [color]="'primary'">Choose File</button>
+  </div>
+  <div class="btn-container">
+    <button mat-flat-button class="btn" [color]="'primary'" [disabled]="!file || !file.name" (click)="upload()">Upload File</button>
+    <button mat-flat-button class="btn remove-btn" [color]="'warn'" (click)="file = {}" [disabled]="!file || !file.name">Remove File</button>
+  </div>
+  <div class="path-container" *ngIf="filePath && filePath.length > 0">
+    <strong>Processed File Path : </strong> {{filePath}}
+  </div>
+  <div class="error-container" *ngIf="error && error.length > 0">
+    {{error}}
+  </div>
+</div>
